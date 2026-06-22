@@ -10,7 +10,7 @@ interface Mensalidade {
 }
 
 function Mensalidades() {
-    const [mensalidades, setMensalidades] = useState<Mensalidade[]>([])
+    const [mensalidades] = useState<Mensalidade[]>([])
 
 
     return(
