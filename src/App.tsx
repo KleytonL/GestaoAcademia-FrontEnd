@@ -4,6 +4,7 @@ import Alunos from './pages/Alunos'
 import Mensalidades from './pages/Mensalidades'
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
+import Clientes from "./pages/Clientes"
 
 function App() {
   return(
@@ -12,6 +13,7 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home/>} />
+          <Route path="/clientes" element={<Clientes/>} />
           <Route path="/alunos" element={<Alunos/>} />
           <Route path="/mensalidades" element={<Mensalidades/>} />
         </Routes>

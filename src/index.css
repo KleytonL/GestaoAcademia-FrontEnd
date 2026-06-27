@@ -136,10 +136,6 @@ th, td {
   color: #fff;
 }
 
-tr:hover td {
-  background-color: #E56C23;
-}
-
 footer {
   width: 100%;
   padding: 24px;

@@ -1,32 +1,33 @@
 import { useEffect, useState } from "react"
 import api from "../service/api"
 
-interface Aluno {
+interface Cliente {
     id: number
     nome: string
     email: string
+    cpf: string
     telefone: string
     dataNascimento: string
-    plano: 'MENSAL' | 'TRIMESTRAL' | 'ANUAL'
+    dataCadastro: string
 }
 
-interface AlunoForm {
+interface ClienteForm {
     nome: string
     email: string
+    cpf: string
     telefone: string
     dataNascimento: string
-    plano: 'MENSAL' | 'TRIMESTRAL' | 'ANUAL'
 }
 
-function Alunos() {
-    const [alunos, setAlunos] = useState<Aluno[]>([])
-    const [form, setForm] = useState<AlunoForm>({nome: '', email: '', telefone: '', dataNascimento: '', plano: 'MENSAL'})
+function Clientes() {
+    const [clientes, setClientes] = useState<Cliente[]>([])
+    const [form, setForm] = useState<ClienteForm>({nome: '', email: '', cpf: '', telefone: '', dataNascimento: ''})
     const [editandoId, setEditandoId] = useState<number | null>(null)
     const [error, setError] = useState<string>('')
     const [success, setSuccess] = useState<string>('')
 
     useEffect(() => {
-        api.get('/alunos').then(response => setAlunos(response.data)).catch(error => console.error('Erro ao buscar alunos: ', error))
+        api.get('/clientes').then(response => setClientes(response.data)).catch(error => console.error('Erro ao buscar clientes: ', error))
     }, [])
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -43,59 +44,59 @@ function Alunos() {
 
         if (editandoId) {
 
-            api.put(`/alunos/${editandoId}`, form).then(() => {
-                setSuccess('Aluno atualizado com sucesso!')
+            api.put(`/clientes/${editandoId}`, form).then(() => {
+                setSuccess('Cliente atualizado com sucesso!')
                 setEditandoId(null)
-                setForm({nome: '', email: '', telefone: '', dataNascimento: '', plano: 'MENSAL'})
-                api.get('/alunos').then(response => setAlunos(response.data)).catch(error => console.error('Erro ao buscar alunos: ', error))
+                setForm({nome: '', email: '', cpf: '', telefone: '', dataNascimento: ''})
+                api.get('/clientes').then(response => setClientes(response.data)).catch(error => console.error('Erro ao buscar clientes: ', error))
             }).catch(error => {
-                setError('Erro ao atualizar aluno')
+                setError('Erro ao atualizar cliente')
                 console.error(error)
             })
 
         } else {
-            api.post('/alunos', form).then(response => {
-            setAlunos([...alunos, response.data])
-            setForm({nome: '', email: '', telefone: '', dataNascimento: '', plano: 'MENSAL'})
+            api.post('/clientes', form).then(response => {
+            setClientes([...clientes, response.data])
+            setForm({nome: '', email: '', cpf: '', telefone: '', dataNascimento: ''})
 
-            setSuccess('Aluno cadastrado com sucesso!')
+            setSuccess('Cliente cadastrado com sucesso!')
 
         }).catch(error => {
-            setError('Erro ao cadastrar aluno')
+            setError('Erro ao cadastrar cliente')
             console.error(error)
         })
         }
     }
 
-    function handleEdit(aluno: Aluno) {
-        setEditandoId(aluno.id)
-        setForm({nome: aluno.nome, email: aluno.email, telefone: aluno.telefone, dataNascimento: aluno.dataNascimento, plano: aluno.plano})
+    function handleEdit(cliente: Cliente) {
+        setEditandoId(cliente.id)
+        setForm({nome: cliente.nome, email: cliente.email, cpf: cliente.cpf, telefone: cliente.telefone, dataNascimento: cliente.dataNascimento.split('/').reverse().join('-')})
         setSuccess('')
         setError('')
     }
 
 
     function handleDelete(id: number) {
-        if (!window.confirm('Tem certeza que deseja excluir este aluno?')) return
+        if (!window.confirm('Tem certeza que deseja excluir este cliente?')) return
 
-        api.delete(`/alunos/${id}`).then(() => {
-            setAlunos(alunos.filter(aluno => aluno.id !== id))
-            setSuccess('Aluno excluído com sucesso!')
+        api.delete(`/clientes/${id}`).then(() => {
+            setClientes(clientes.filter(cliente => cliente.id !== id))
+            setSuccess('Cliente excluído com sucesso!')
         }).catch(error => {
-            setError('Erro ao excluir aluno')
+            setError('Erro ao excluir cliente')
             console.error(error)
         })
     }
 
     function handleCancelEdit() {
         setEditandoId(null)
-        setForm({nome: '', email: '', telefone: '', dataNascimento: '', plano: 'MENSAL'})
+        setForm({nome: '', email: '', cpf: '', telefone: '', dataNascimento: ''})
         setSuccess('')
         setError('')
     }
 
     function validadeForm() {
-        if (!form.nome || !form.email || !form.telefone || !form.dataNascimento) {
+        if (!form.nome || !form.email || !form.cpf || !form.telefone || !form.dataNascimento) {
             setError('Todos os campos são obrigatórios')
             return false
         }
@@ -105,9 +106,9 @@ function Alunos() {
 
     return(
         <div className="page">
-            <h1>Alunos</h1>
+            <h1>Clientes</h1>
 
-            <h2>{editandoId ? 'Editar aluno' : 'Cadastrar aluno'}</h2>
+            <h2>{editandoId ? 'Editar cliente' : 'Cadastrar cliente'}</h2>
             <form onSubmit={handleSubmit}>
                 {error && <p style={{color: 'red'}}>{error}</p>}
                 {success && <p style={{color: 'green'}}>{success}</p>}
@@ -117,18 +118,14 @@ function Alunos() {
                 <h3>Email</h3>
                 <input name="email" placeholder="Insira seu email aqui" type="email" value={form.email} onChange={handleChange} />
                 <br/>
+                <h3>CPF</h3>
+                <input name="cpf" placeholder="Insira seu CPF aqui" value={form.cpf} onChange={handleChange} />
+                <br/>
                 <h3>Telefone</h3>
                 <input name="telefone" placeholder="(xx) xxxx-xxxx" type="tel" value={form.telefone} onChange={handleChange} maxLength={15} />
                 <br/>
                 <h3>Data de nascimento</h3>
                 <input name="dataNascimento" placeholder="Insira sua data de nascimento aqui" type="date" pattern="dd/MM/yyyy" value={form.dataNascimento} onChange={handleChange} />
-                <br/>
-                <h3>Plano</h3>
-                <select name="plano" value={form.plano} onChange={handleChange}>
-                    <option value="MENSAL">Mensal</option>
-                    <option value="TRIMESTRAL">Trimestral</option>
-                    <option value="ANUAL">Anual</option>
-                </select>
                 <br/>
                 <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
                 {editandoId && (
@@ -138,29 +135,31 @@ function Alunos() {
                 )}
             </form>
 
-            <h2>Lista de alunos</h2>
+            <h2>Lista de clientes</h2>
             <table>
                 <thead>
                     <tr>
                         <th>Nome</th>
                         <th>Email</th>
+                        <th>CPF</th>
                         <th>Telefone</th>
                         <th>Data de nascimento</th>
-                        <th>Plano</th>
+                        <th>Data de cadastro</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {alunos.map((aluno) => (
-                        <tr key={aluno.id}>
-                            <td>{aluno.nome}</td>
-                            <td>{aluno.email}</td>
-                            <td>{aluno.telefone}</td>
-                            <td>{aluno.dataNascimento}</td>
-                            <td>{aluno.plano}</td>
+                    {clientes.map((cliente) => (
+                        <tr key={cliente.id}>
+                            <td>{cliente.nome}</td>
+                            <td>{cliente.email}</td>
+                            <td>{cliente.cpf}</td>
+                            <td>{cliente.telefone}</td>
+                            <td>{cliente.dataNascimento}</td>
+                            <td>{cliente.dataCadastro}</td>
                             <td>
-                                <button onClick={() => handleEdit(aluno)}>Editar</button>
-                                <button onClick={() => handleDelete(aluno.id)}>Excluir</button>
+                                <button onClick={() => handleEdit(cliente)}>Editar</button>
+                                <button onClick={() => handleDelete(cliente.id)}>Excluir</button>
                             </td>
                         </tr>
                     ))}
@@ -170,4 +169,4 @@ function Alunos() {
     )
 }
 
-export default Alunos
+export default Clientes
