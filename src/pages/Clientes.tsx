@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
+import { IMaskInput } from "react-imask"
 import api from "../service/api"
 
 interface Cliente {
     id: number
     nome: string
     email: string
-    cpf: string
     telefone: string
+    cpf: string
     dataNascimento: string
     dataCadastro: string
 }
@@ -21,7 +22,7 @@ interface ClienteForm {
 
 function Clientes() {
     const [clientes, setClientes] = useState<Cliente[]>([])
-    const [form, setForm] = useState<ClienteForm>({nome: '', email: '', cpf: '', telefone: '', dataNascimento: ''})
+    const [form, setForm] = useState<ClienteForm>({nome: '', email: '', telefone: '', cpf: '', dataNascimento: ''})
     const [editandoId, setEditandoId] = useState<number | null>(null)
     const [error, setError] = useState<string>('')
     const [success, setSuccess] = useState<string>('')
@@ -47,7 +48,7 @@ function Clientes() {
             api.put(`/clientes/${editandoId}`, form).then(() => {
                 setSuccess('Cliente atualizado com sucesso!')
                 setEditandoId(null)
-                setForm({nome: '', email: '', cpf: '', telefone: '', dataNascimento: ''})
+                setForm({nome: '', email: '', telefone: '', cpf: '', dataNascimento: ''})
                 api.get('/clientes').then(response => setClientes(response.data)).catch(error => console.error('Erro ao buscar clientes: ', error))
             }).catch(error => {
                 setError('Erro ao atualizar cliente')
@@ -57,7 +58,7 @@ function Clientes() {
         } else {
             api.post('/clientes', form).then(response => {
             setClientes([...clientes, response.data])
-            setForm({nome: '', email: '', cpf: '', telefone: '', dataNascimento: ''})
+            setForm({nome: '', email: '', telefone: '', cpf: '', dataNascimento: ''})
 
             setSuccess('Cliente cadastrado com sucesso!')
 
@@ -70,7 +71,7 @@ function Clientes() {
 
     function handleEdit(cliente: Cliente) {
         setEditandoId(cliente.id)
-        setForm({nome: cliente.nome, email: cliente.email, cpf: cliente.cpf, telefone: cliente.telefone, dataNascimento: cliente.dataNascimento.split('/').reverse().join('-')})
+        setForm({nome: cliente.nome, email: cliente.email, telefone: cliente.telefone, cpf: cliente.cpf, dataNascimento: cliente.dataNascimento.split('/').reverse().join('-')})
         setSuccess('')
         setError('')
     }
@@ -90,7 +91,7 @@ function Clientes() {
 
     function handleCancelEdit() {
         setEditandoId(null)
-        setForm({nome: '', email: '', cpf: '', telefone: '', dataNascimento: ''})
+        setForm({nome: '', email: '', telefone: '', cpf: '', dataNascimento: ''})
         setSuccess('')
         setError('')
     }
@@ -119,10 +120,22 @@ function Clientes() {
                 <input name="email" placeholder="Insira seu email aqui" type="email" value={form.email} onChange={handleChange} />
                 <br/>
                 <h3>CPF</h3>
-                <input name="cpf" placeholder="Insira seu CPF aqui" value={form.cpf} onChange={handleChange} />
+                <IMaskInput
+                    name="cpf"
+                    placeholder="Insira seu CPF aqui"
+                    value={form.cpf}
+                    onChange={handleChange}
+                    mask="000.000.000-00"
+                />
                 <br/>
                 <h3>Telefone</h3>
-                <input name="telefone" placeholder="(xx) xxxx-xxxx" type="tel" value={form.telefone} onChange={handleChange} maxLength={15} />
+                <IMaskInput
+                    name="telefone"
+                    placeholder="(xx) xxxx-xxxx"
+                    value={form.telefone}
+                    onChange={handleChange}
+                    mask="(00) 00000-0000"
+                />
                 <br/>
                 <h3>Data de nascimento</h3>
                 <input name="dataNascimento" placeholder="Insira sua data de nascimento aqui" type="date" pattern="dd/MM/yyyy" value={form.dataNascimento} onChange={handleChange} />
