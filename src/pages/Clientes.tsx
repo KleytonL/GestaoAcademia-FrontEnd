@@ -6,6 +6,7 @@ interface Cliente {
     id: number
     nome: string
     email: string
+    senha: string
     telefone: string
     cpf: string
     dataNascimento: string
@@ -15,6 +16,7 @@ interface Cliente {
 interface ClienteForm {
     nome: string
     email: string
+    senha: string
     cpf: string
     telefone: string
     dataNascimento: string
@@ -22,7 +24,7 @@ interface ClienteForm {
 
 function Clientes() {
     const [clientes, setClientes] = useState<Cliente[]>([])
-    const [form, setForm] = useState<ClienteForm>({nome: '', email: '', telefone: '', cpf: '', dataNascimento: ''})
+    const [form, setForm] = useState<ClienteForm>({nome: '', email: '', senha: '', telefone: '', cpf: '', dataNascimento: ''})
     const [editandoId, setEditandoId] = useState<number | null>(null)
     const [error, setError] = useState<string>('')
     const [success, setSuccess] = useState<string>('')
@@ -48,7 +50,7 @@ function Clientes() {
             api.put(`/clientes/${editandoId}`, form).then(() => {
                 setSuccess('Cliente atualizado com sucesso!')
                 setEditandoId(null)
-                setForm({nome: '', email: '', telefone: '', cpf: '', dataNascimento: ''})
+                setForm({nome: '', email: '', senha: '', telefone: '', cpf: '', dataNascimento: ''})
                 api.get('/clientes').then(response => setClientes(response.data)).catch(error => console.error('Erro ao buscar clientes: ', error))
             }).catch(error => {
                 setError('Erro ao atualizar cliente')
@@ -58,7 +60,7 @@ function Clientes() {
         } else {
             api.post('/clientes', form).then(response => {
             setClientes([...clientes, response.data])
-            setForm({nome: '', email: '', telefone: '', cpf: '', dataNascimento: ''})
+            setForm({nome: '', email: '', senha: '', telefone: '', cpf: '', dataNascimento: ''})
 
             setSuccess('Cliente cadastrado com sucesso!')
 
@@ -71,7 +73,7 @@ function Clientes() {
 
     function handleEdit(cliente: Cliente) {
         setEditandoId(cliente.id)
-        setForm({nome: cliente.nome, email: cliente.email, telefone: cliente.telefone, cpf: cliente.cpf, dataNascimento: cliente.dataNascimento.split('/').reverse().join('-')})
+        setForm({nome: cliente.nome, email: cliente.email, senha: cliente.senha, telefone: cliente.telefone, cpf: cliente.cpf, dataNascimento: cliente.dataNascimento.split('/').reverse().join('-')})
         setSuccess('')
         setError('')
     }
@@ -91,13 +93,13 @@ function Clientes() {
 
     function handleCancelEdit() {
         setEditandoId(null)
-        setForm({nome: '', email: '', telefone: '', cpf: '', dataNascimento: ''})
+        setForm({nome: '', email: '', senha: '', telefone: '', cpf: '', dataNascimento: ''})
         setSuccess('')
         setError('')
     }
 
     function validadeForm() {
-        if (!form.nome || !form.email || !form.cpf || !form.telefone || !form.dataNascimento) {
+        if (!form.nome || !form.email || !form.senha || !form.cpf || !form.telefone || !form.dataNascimento) {
             setError('Todos os campos são obrigatórios')
             return false
         }
@@ -114,10 +116,27 @@ function Clientes() {
                 {error && <p style={{color: 'red'}}>{error}</p>}
                 {success && <p style={{color: 'green'}}>{success}</p>}
                 <h3>Nome</h3>
-                <input name="nome" placeholder="Insira seu nome aqui" value={form.nome} onChange={handleChange} />
+                <input 
+                    name="nome" 
+                    placeholder="Insira seu nome aqui" 
+                    value={form.nome} 
+                    onChange={handleChange} />
                 <br/>
                 <h3>Email</h3>
-                <input name="email" placeholder="Insira seu email aqui" type="email" value={form.email} onChange={handleChange} />
+                <input 
+                    name="email" 
+                    placeholder="Insira seu email aqui" 
+                    type="email" 
+                    value={form.email} 
+                    onChange={handleChange} />
+                <br/>
+                <h3>Senha</h3>
+                <input 
+                    name="senha" 
+                    placeholder="Insira sua senha aqui"
+                    type="password"
+                    value={form.senha} 
+                    onChange={handleChange} />
                 <br/>
                 <h3>CPF</h3>
                 <IMaskInput
@@ -138,7 +157,13 @@ function Clientes() {
                 />
                 <br/>
                 <h3>Data de nascimento</h3>
-                <input name="dataNascimento" placeholder="Insira sua data de nascimento aqui" type="date" pattern="dd/MM/yyyy" value={form.dataNascimento} onChange={handleChange} />
+                <input 
+                    name="dataNascimento" 
+                    placeholder="Insira sua data de nascimento aqui" 
+                    type="date" 
+                    pattern="dd/MM/yyyy" 
+                    value={form.dataNascimento} 
+                    onChange={handleChange} />
                 <br/>
                 <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
                 {editandoId && (
