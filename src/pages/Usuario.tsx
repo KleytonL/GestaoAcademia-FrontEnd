@@ -2,36 +2,38 @@ import { useEffect, useState } from "react"
 import { IMaskInput } from "react-imask"
 import api from "../service/api"
 
-interface Cliente {
+interface Usuario {
     id: number
     nome: string
-    email: string
-    senha: string
     telefone: string
     cpf: string
     dataNascimento: string
-    dataCadastro: string
+    ativo: boolean
 }
 
-interface ClienteForm {
+interface UsuarioForm {
     nome: string
-    email: string
-    senha: string
     cpf: string
     telefone: string
     dataNascimento: string
 }
 
-function Clientes() {
-    const [clientes, setClientes] = useState<Cliente[]>([])
-    const [form, setForm] = useState<ClienteForm>({nome: '', email: '', senha: '', telefone: '', cpf: '', dataNascimento: ''})
+function Usuarios() {
+    const [usuarios, setUsuarios] = useState<Usuario[]>([])
+    const [form, setForm] = useState<UsuarioForm>({nome: '', telefone: '', cpf: '', dataNascimento: ''})
     const [editandoId, setEditandoId] = useState<number | null>(null)
+    const [filtroAtivo, setFiltroAtivo] = useState<string>('true')
     const [error, setError] = useState<string>('')
     const [success, setSuccess] = useState<string>('')
 
+    function buscarUsuarios(filtro: string) {
+        const params = filtro === 'todos' ? {} : { ativo: filtro }
+        api.get('/usuarios', { params }).then(response => setUsuarios(response.data)).catch(error => console.error('Erro ao buscar usuários: ', error))
+    }
+
     useEffect(() => {
-        api.get('/clientes').then(response => setClientes(response.data)).catch(error => console.error('Erro ao buscar clientes: ', error))
-    }, [])
+        buscarUsuarios(filtroAtivo)
+    }, [filtroAtivo])
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
         setForm({ ...form, [e.target.name]: e.target.value})
@@ -47,59 +49,57 @@ function Clientes() {
 
         if (editandoId) {
 
-            api.put(`/clientes/${editandoId}`, form).then(() => {
-                setSuccess('Cliente atualizado com sucesso!')
+            api.put(`/usuarios/${editandoId}`, form).then(() => {
+                setSuccess('Usuário atualizado com sucesso!')
                 setEditandoId(null)
-                setForm({nome: '', email: '', senha: '', telefone: '', cpf: '', dataNascimento: ''})
-                api.get('/clientes').then(response => setClientes(response.data)).catch(error => console.error('Erro ao buscar clientes: ', error))
+                setForm({nome: '', telefone: '', cpf: '', dataNascimento: ''})
+                buscarUsuarios(filtroAtivo)
             }).catch(error => {
-                setError('Erro ao atualizar cliente')
+                setError('Erro ao atualizar usuário')
                 console.error(error)
             })
 
         } else {
-            api.post('/clientes', form).then(response => {
-            setClientes([...clientes, response.data])
-            setForm({nome: '', email: '', senha: '', telefone: '', cpf: '', dataNascimento: ''})
-
-            setSuccess('Cliente cadastrado com sucesso!')
-
+            api.post('/usuarios', form).then(() => {
+                setForm({nome: '', telefone: '', cpf: '', dataNascimento: ''})
+                setSuccess('Usuário cadastrado com sucesso!')
+                buscarUsuarios(filtroAtivo)
         }).catch(error => {
-            setError('Erro ao cadastrar cliente')
+            setError('Erro ao cadastrar usuário')
             console.error(error)
         })
         }
     }
 
-    function handleEdit(cliente: Cliente) {
-        setEditandoId(cliente.id)
-        setForm({nome: cliente.nome, email: cliente.email, senha: cliente.senha, telefone: cliente.telefone, cpf: cliente.cpf, dataNascimento: cliente.dataNascimento.split('/').reverse().join('-')})
+    function handleEdit(usuario: Usuario) {
+        setEditandoId(usuario.id)
+        setForm({nome: usuario.nome, telefone: usuario.telefone, cpf: usuario.cpf, dataNascimento: usuario.dataNascimento.split('/').reverse().join('-')})
         setSuccess('')
         setError('')
     }
 
 
     function handleDelete(id: number) {
-        if (!window.confirm('Tem certeza que deseja excluir este cliente?')) return
+        if (!window.confirm('Tem certeza que deseja excluir este usuário?')) return
 
-        api.delete(`/clientes/${id}`).then(() => {
-            setClientes(clientes.filter(cliente => cliente.id !== id))
-            setSuccess('Cliente excluído com sucesso!')
+        api.delete(`/usuarios/${id}`).then(() => {
+            setSuccess('Usuário excluído com sucesso!')
+            buscarUsuarios(filtroAtivo)
         }).catch(error => {
-            setError('Erro ao excluir cliente')
+            setError('Erro ao excluir usuário')
             console.error(error)
         })
     }
 
     function handleCancelEdit() {
         setEditandoId(null)
-        setForm({nome: '', email: '', senha: '', telefone: '', cpf: '', dataNascimento: ''})
+        setForm({nome: '', telefone: '', cpf: '', dataNascimento: ''})
         setSuccess('')
         setError('')
     }
 
     function validadeForm() {
-        if (!form.nome || !form.email || !form.senha || !form.cpf || !form.telefone || !form.dataNascimento) {
+        if (!form.nome || !form.telefone || !form.cpf || !form.dataNascimento) {
             setError('Todos os campos são obrigatórios')
             return false
         }
@@ -109,9 +109,9 @@ function Clientes() {
 
     return(
         <div className="page">
-            <h1>Clientes</h1>
+            <h1>Usuários</h1>
 
-            <h2>{editandoId ? 'Editar cliente' : 'Cadastrar cliente'}</h2>
+            <h2>{editandoId ? 'Editar usuário' : 'Cadastrar usuário'}</h2>
             <form onSubmit={handleSubmit}>
                 {error && <p style={{color: 'red'}}>{error}</p>}
                 {success && <p style={{color: 'green'}}>{success}</p>}
@@ -120,22 +120,6 @@ function Clientes() {
                     name="nome" 
                     placeholder="Insira seu nome aqui" 
                     value={form.nome} 
-                    onChange={handleChange} />
-                <br/>
-                <h3>Email</h3>
-                <input 
-                    name="email" 
-                    placeholder="Insira seu email aqui" 
-                    type="email" 
-                    value={form.email} 
-                    onChange={handleChange} />
-                <br/>
-                <h3>Senha</h3>
-                <input 
-                    name="senha" 
-                    placeholder="Insira sua senha aqui"
-                    type="password"
-                    value={form.senha} 
                     onChange={handleChange} />
                 <br/>
                 <h3>CPF</h3>
@@ -173,31 +157,37 @@ function Clientes() {
                 )}
             </form>
 
-            <h2>Lista de clientes</h2>
+            <h2>Lista de usuários</h2>
+            <label>
+                Filtrar:
+                <select value={filtroAtivo} onChange={(e) => setFiltroAtivo(e.target.value)}>
+                    <option value="true">Ativos</option>
+                    <option value="false">Inativos</option>
+                    <option value="todos">Todos</option>
+                </select>
+            </label>
             <table>
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Email</th>
                         <th>CPF</th>
                         <th>Telefone</th>
                         <th>Data de nascimento</th>
-                        <th>Data de cadastro</th>
+                        <th>Status</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {clientes.map((cliente) => (
-                        <tr key={cliente.id}>
-                            <td>{cliente.nome}</td>
-                            <td>{cliente.email}</td>
-                            <td>{cliente.cpf}</td>
-                            <td>{cliente.telefone}</td>
-                            <td>{cliente.dataNascimento}</td>
-                            <td>{cliente.dataCadastro}</td>
+                    {usuarios.map((usuario) => (
+                        <tr key={usuario.id}>
+                            <td>{usuario.nome}</td>
+                            <td>{usuario.cpf}</td>
+                            <td>{usuario.telefone}</td>
+                            <td>{usuario.dataNascimento}</td>
+                            <td>{usuario.ativo ? 'Ativo' : 'Inativo'}</td>
                             <td>
-                                <button onClick={() => handleEdit(cliente)}>Editar</button>
-                                <button onClick={() => handleDelete(cliente.id)}>Excluir</button>
+                                <button onClick={() => handleEdit(usuario)}>Editar</button>
+                                <button onClick={() => handleDelete(usuario.id)}>Excluir</button>
                             </td>
                         </tr>
                     ))}
@@ -207,4 +197,4 @@ function Clientes() {
     )
 }
 
-export default Clientes
+export default Usuarios

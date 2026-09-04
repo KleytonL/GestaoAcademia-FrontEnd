@@ -4,8 +4,8 @@ function Navbar() {
         <nav>
             <h1>CR TRAINER</h1>
             <Link to="/">Home</Link> {' '}
-            <Link to="/clientes">Clientes</Link> {' '}
-            <Link to="/mensalidades">Mensalidades</Link>
+            <Link to="/usuarios">Usuarios</Link> {' '}
+            <Link to="/planos">Planos</Link>
         </nav>
     )
 }

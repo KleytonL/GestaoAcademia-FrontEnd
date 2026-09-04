@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Home from './pages/Home'
-import Mensalidades from './pages/Mensalidades'
+import Planos from './pages/Plano'
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
-import Clientes from "./pages/Clientes"
+import Usuario from "./pages/Usuario"
 
 function App() {
   return(
@@ -12,8 +12,8 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home/>} />
-          <Route path="/clientes" element={<Clientes/>} />
-          <Route path="/mensalidades" element={<Mensalidades/>} />
+          <Route path="/usuarios" element={<Usuario/>} />
+          <Route path="/planos" element={<Planos/>} />
         </Routes>
       </main>
       <Footer/>
