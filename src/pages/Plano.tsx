@@ -121,97 +121,100 @@ function Planos() {
 
     return (
         <div className="page">
-            <h1>Planos</h1>
+            <div>
+                <h1>Planos</h1>
 
-            <h2>{editandoId ? 'Editar plano' : 'Cadastrar plano'}</h2>
-            <form onSubmit={handleSubmit}>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                {success && <p style={{ color: 'green' }}>{success}</p>}
-                <h3>Nome</h3>
-                <input
-                    name="nome"
-                    placeholder="Insira o nome do plano"
-                    value={form.nome}
-                    onChange={handleChange} />
-                <br />
-                <h3>Valor</h3>
-                <IMaskInput
-                    name="valor"
-                    placeholder="R$ 0,00"
-                    value={form.valor}
-                    onAccept={(value) => setForm({ ...form, valor: value })}
-                    mask="R$ num"
-                    blocks={{
-                        num: {
-                            mask: Number,
-                            thousandsSeparator: '.',
-                            radix: ',',
-                            scale: 2,
-                            padFractionalZeros: true,
-                            normalizeZeros: true,
-                        }
-                    }}
-                />
-                <br />
-                <h3>Duração (dias)</h3>
-                <input
-                    name="duracao"
-                    placeholder="Ex: 30"
-                    type="number"
-                    value={form.duracao}
-                    onChange={handleChange} />
-                <br />
-                <h3>Descrição</h3>
-                <textarea
-                    name="descricao"
-                    placeholder="Descrição do plano"
-                    value={form.descricao}
-                    onChange={handleChange} />
-                <br />
-                <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
-                {editandoId && (
-                    <button type="button" onClick={handleCancelEdit}>
-                        Cancelar
-                    </button>
-                )}
-            </form>
-
-            <h2>Lista de planos</h2>
-            <label>
-                Filtrar:
-                <select value={filtroAtivo} onChange={(e) => setFiltroAtivo(e.target.value)}>
-                    <option value="true">Ativos</option>
-                    <option value="false">Inativos</option>
-                    <option value="todos">Todos</option>
-                </select>
-            </label>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Valor</th>
-                        <th>Duração</th>
-                        <th>Descrição</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {planos.map((plano) => (
-                        <tr key={plano.id}>
-                            <td>{plano.nome}</td>
-                            <td>R$ {plano.valor.toFixed(2)}</td>
-                            <td>{plano.duracao} dias</td>
-                            <td>{plano.descricao}</td>
-                            <td>{plano.ativo ? 'Ativo' : 'Inativo'}</td>
-                            <td>
-                                <button onClick={() => handleEdit(plano)}>Editar</button>
-                                <button onClick={() => handleDelete(plano.id)}>Excluir</button>
-                            </td>
+                <h2>{editandoId ? 'Editar plano' : 'Cadastrar plano'}</h2>
+                <form onSubmit={handleSubmit}>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    {success && <p style={{ color: 'green' }}>{success}</p>}
+                    <h3>Nome</h3>
+                    <input
+                        name="nome"
+                        placeholder="Insira o nome do plano"
+                        value={form.nome}
+                        onChange={handleChange} />
+                    <br />
+                    <h3>Valor</h3>
+                    <IMaskInput
+                        name="valor"
+                        placeholder="R$ 0,00"
+                        value={form.valor}
+                        onAccept={(value) => setForm({ ...form, valor: value })}
+                        mask="R$ num"
+                        blocks={{
+                            num: {
+                                mask: Number,
+                                thousandsSeparator: '.',
+                                radix: ',',
+                                scale: 2,
+                                padFractionalZeros: true,
+                                normalizeZeros: true,
+                            }
+                        }}
+                    />
+                    <br />
+                    <h3>Duração (dias)</h3>
+                    <input
+                        name="duracao"
+                        placeholder="Insira a duração em dias"
+                        type="number"
+                        value={form.duracao}
+                        onChange={handleChange} />
+                    <br />
+                    <h3>Descrição</h3>
+                    <textarea
+                        name="descricao"
+                        placeholder="Insira a descrição do plano"
+                        value={form.descricao}
+                        onChange={handleChange} />
+                    <br />
+                    <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
+                    {editandoId && (
+                        <button type="button" onClick={handleCancelEdit}>
+                            Cancelar
+                        </button>
+                    )}
+                </form>
+            </div>
+            <div>
+                <h2>Lista de planos</h2>
+                <label>
+                    Filtrar:
+                    <select value={filtroAtivo} onChange={(e) => setFiltroAtivo(e.target.value)}>
+                        <option value="true">Ativos</option>
+                        <option value="false">Inativos</option>
+                        <option value="todos">Todos</option>
+                    </select>
+                </label>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Valor</th>
+                            <th>Duração</th>
+                            <th>Descrição</th>
+                            <th>Status</th>
+                            <th>Ações</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {planos.map((plano) => (
+                            <tr key={plano.id}>
+                                <td>{plano.nome}</td>
+                                <td>R$ {plano.valor.toFixed(2)}</td>
+                                <td>{plano.duracao} dias</td>
+                                <td>{plano.descricao}</td>
+                                <td>{plano.ativo ? 'Ativo' : 'Inativo'}</td>
+                                <td>
+                                    <button onClick={() => handleEdit(plano)}>Editar</button>
+                                    <button onClick={() => handleDelete(plano.id)}>Excluir</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     )
 }
