@@ -23,7 +23,7 @@ function Planos() {
     const [form, setForm] = useState<PlanoForm>({ nome: '', valor: '', duracao: '', descricao: '' })
     const [editandoId, setEditandoId] = useState<number | null>(null)
     const [filtroAtivo, setFiltroAtivo] = useState<string>('true')
-    const [error, setError] = useState<string>('')
+    const [errors, setErrors] = useState<Record<string, string>>({})
     const [success, setSuccess] = useState<string>('')
 
     const valorNumerico = parseFloat(form.valor.replace('R$ ', '').replace('.', '').replace(',', '.'))
@@ -44,7 +44,7 @@ function Planos() {
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault()
 
-        setError('')
+        setErrors({})
         setSuccess('')
 
         if (!validadeForm()) return
@@ -63,7 +63,11 @@ function Planos() {
                 setForm({ nome: '', valor: '', duracao: '', descricao: '' })
                 buscarPlanos(filtroAtivo)
             }).catch(error => {
-                setError('Erro ao atualizar plano')
+                if (error.response?.status === 400 && typeof error.response.data === 'object') {
+                    setErrors(error.response.data)
+                } else {
+                    setErrors({ geral: 'Erro ao atualizar plano' })
+                }
                 console.error(error)
             })
 
@@ -73,7 +77,11 @@ function Planos() {
                 setSuccess('Plano cadastrado com sucesso!')
                 buscarPlanos(filtroAtivo)
             }).catch(error => {
-                setError('Erro ao cadastrar plano')
+                if (error.response?.status === 400 && typeof error.response.data === 'object') {
+                    setErrors(error.response.data)
+                } else {
+                    setErrors({ geral: 'Erro ao cadastrar plano' })
+                }
                 console.error(error)
             })
         }
@@ -88,17 +96,19 @@ function Planos() {
             descricao: plano.descricao
         })
         setSuccess('')
-        setError('')
+        setErrors({})
     }
 
     function handleDelete(id: number) {
         if (!window.confirm('Tem certeza que deseja excluir este plano?')) return
 
+        setErrors({})
+
         api.delete(`/planos/${id}`).then(() => {
             setSuccess('Plano excluído com sucesso!')
             buscarPlanos(filtroAtivo)
         }).catch(error => {
-            setError('Erro ao excluir plano')
+            setErrors({ geral: 'Erro ao excluir plano' })
             console.error(error)
         })
     }
@@ -107,12 +117,12 @@ function Planos() {
         setEditandoId(null)
         setForm({ nome: '', valor: '', duracao: '', descricao: '' })
         setSuccess('')
-        setError('')
+        setErrors({})
     }
 
     function validadeForm() {
         if (!form.nome || !form.valor || !form.duracao) {
-            setError('Nome, valor e duração são obrigatórios')
+            setErrors({ geral: 'Erro ao cadastrar plano' })
             return false
         }
 
@@ -126,14 +136,16 @@ function Planos() {
 
                 <h2>{editandoId ? 'Editar plano' : 'Cadastrar plano'}</h2>
                 <form onSubmit={handleSubmit}>
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    {errors.geral && <p style={{ color: 'red' }}>{errors.geral}</p>}
                     {success && <p style={{ color: 'green' }}>{success}</p>}
                     <h3>Nome</h3>
                     <input
                         name="nome"
                         placeholder="Insira o nome do plano"
                         value={form.nome}
+                        maxLength={50}
                         onChange={handleChange} />
+                    {errors.nome && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.nome}</span>}
                     <br />
                     <h3>Valor</h3>
                     <IMaskInput
@@ -153,6 +165,7 @@ function Planos() {
                             }
                         }}
                     />
+                    {errors.valor && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.valor}</span>}
                     <br />
                     <h3>Duração (dias)</h3>
                     <input
@@ -161,20 +174,24 @@ function Planos() {
                         type="number"
                         value={form.duracao}
                         onChange={handleChange} />
+                    {errors.duracao && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.duracao}</span>}
                     <br />
                     <h3>Descrição</h3>
                     <textarea
                         name="descricao"
                         placeholder="Insira a descrição do plano"
                         value={form.descricao}
+                        maxLength={255}
                         onChange={handleChange} />
                     <br />
-                    <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
-                    {editandoId && (
-                        <button type="button" onClick={handleCancelEdit}>
-                            Cancelar
-                        </button>
-                    )}
+                    <div style={{ display: 'grid', gridTemplateColumns: editandoId ? '1fr 1fr' : '1fr', gap: '8px', marginTop: '8px' }}>
+                        <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
+                        {editandoId && (
+                            <button type="button" onClick={handleCancelEdit}>
+                                Cancelar
+                            </button>
+                        )}
+                    </div>
                 </form>
             </div>
             <div>
@@ -204,11 +221,13 @@ function Planos() {
                                 <td>{plano.nome}</td>
                                 <td>R$ {plano.valor.toFixed(2)}</td>
                                 <td>{plano.duracao} dias</td>
-                                <td>{plano.descricao}</td>
+                                <td className="descricao-wrap" title={plano.descricao}>{plano.descricao}</td>
                                 <td>{plano.ativo ? 'Ativo' : 'Inativo'}</td>
                                 <td>
-                                    <button onClick={() => handleEdit(plano)}>Editar</button>
-                                    <button onClick={() => handleDelete(plano.id)}>Excluir</button>
+                                    <div style={{ display: 'flex', margin: '4px 0', gap: '8px' }}>
+                                        <button onClick={() => handleEdit(plano)}>Editar</button>
+                                        <button onClick={() => handleDelete(plano.id)}>Excluir</button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

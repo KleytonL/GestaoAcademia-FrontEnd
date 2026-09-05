@@ -23,7 +23,7 @@ function Usuarios() {
     const [form, setForm] = useState<UsuarioForm>({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
     const [editandoId, setEditandoId] = useState<number | null>(null)
     const [filtroAtivo, setFiltroAtivo] = useState<string>('true')
-    const [error, setError] = useState<string>('')
+    const [errors, setErrors] = useState<Record<string, string>>({})
     const [success, setSuccess] = useState<string>('')
 
     function buscarUsuarios(filtro: string) {
@@ -42,7 +42,7 @@ function Usuarios() {
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault()
 
-        setError('')
+        setErrors({})
         setSuccess('')
 
         if (!validadeForm()) return
@@ -55,7 +55,11 @@ function Usuarios() {
                 setForm({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
                 buscarUsuarios(filtroAtivo)
             }).catch(error => {
-                setError('Erro ao atualizar usuário')
+                if (error.response?.status === 400 && typeof error.response.data === 'object') {
+                    setErrors(error.response.data)
+                } else {
+                    setErrors({ geral: 'Erro ao atualizar usuário' })
+                }
                 console.error(error)
             })
 
@@ -65,7 +69,11 @@ function Usuarios() {
                 setSuccess('Usuário cadastrado com sucesso!')
                 buscarUsuarios(filtroAtivo)
             }).catch(error => {
-                setError('Erro ao cadastrar usuário')
+                if (error.response?.status === 400 && typeof error.response.data === 'object') {
+                    setErrors(error.response.data)
+                } else {
+                    setErrors({ geral: 'Erro ao cadastrar usuário' })
+                }
                 console.error(error)
             })
         }
@@ -75,7 +83,7 @@ function Usuarios() {
         setEditandoId(usuario.id)
         setForm({ nome: usuario.nome, telefone: usuario.telefone, cpf: usuario.cpf, dataNascimento: usuario.dataNascimento.split('/').reverse().join('-') })
         setSuccess('')
-        setError('')
+        setErrors({})
     }
 
 
@@ -86,7 +94,7 @@ function Usuarios() {
             setSuccess('Usuário excluído com sucesso!')
             buscarUsuarios(filtroAtivo)
         }).catch(error => {
-            setError('Erro ao excluir usuário')
+            setErrors({ geral: 'Erro ao excluir usuário' })
             console.error(error)
         })
     }
@@ -95,16 +103,12 @@ function Usuarios() {
         setEditandoId(null)
         setForm({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
         setSuccess('')
-        setError('')
+        setErrors({})
     }
 
     function validadeForm() {
         if (!form.nome || !form.telefone || !form.cpf || !form.dataNascimento) {
-            setError('Todos os campos são obrigatórios')
-            return false
-        }
-        if (new Date(form.dataNascimento) > new Date()) {
-            setError('A data de nascimento não pode passar da data atual')
+            setErrors({ geral: 'Todos os campos são obrigatórios' })
             return false
         }
         return true
@@ -117,14 +121,16 @@ function Usuarios() {
 
                 <h2>{editandoId ? 'Editar usuário' : 'Cadastrar usuário'}</h2>
                 <form onSubmit={handleSubmit}>
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    {errors.geral && <p style={{ color: 'red' }}>{errors.geral}</p>}
                     {success && <p style={{ color: 'green' }}>{success}</p>}
                     <h3>Nome</h3>
                     <input
                         name="nome"
                         placeholder="Insira seu nome aqui"
                         value={form.nome}
+                        maxLength={25}
                         onChange={handleChange} />
+                    {errors.nome && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.nome}</span>}
                     <br />
                     <h3>CPF</h3>
                     <IMaskInput
@@ -134,6 +140,7 @@ function Usuarios() {
                         onChange={handleChange}
                         mask="000.000.000-00"
                     />
+                    {errors.cpf && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.cpf}</span>}
                     <br />
                     <h3>Telefone</h3>
                     <IMaskInput
@@ -143,6 +150,7 @@ function Usuarios() {
                         onChange={handleChange}
                         mask="(00) 00000-0000"
                     />
+                    {errors.telefone && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.telefone}</span>}
                     <br />
                     <h3>Data de nascimento</h3>
                     <input
@@ -150,15 +158,20 @@ function Usuarios() {
                         placeholder="Insira sua data de nascimento aqui"
                         type="date"
                         pattern="dd/MM/yyyy"
+                        max={new Date().toISOString().split('T')[0]}
+                        min="1900-01-01"
                         value={form.dataNascimento}
                         onChange={handleChange} />
+                    {errors.dataNascimento && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.dataNascimento}</span>}
                     <br />
-                    <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
-                    {editandoId && (
-                        <button type="button" onClick={handleCancelEdit}>
-                            Cancelar
-                        </button>
-                    )}
+                    <div style={{ display: 'grid', gridTemplateColumns: editandoId ? '1fr 1fr' : '1fr', gap: '8px', marginTop: '8px' }}>
+                        <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
+                        {editandoId && (
+                            <button type="button" onClick={handleCancelEdit}>
+                                Cancelar
+                            </button>
+                        )}
+                    </div>
                 </form>
             </div>
             <div>
@@ -191,8 +204,10 @@ function Usuarios() {
                                 <td>{usuario.dataNascimento}</td>
                                 <td>{usuario.ativo ? 'Ativo' : 'Inativo'}</td>
                                 <td>
-                                    <button onClick={() => handleEdit(usuario)}>Editar</button>
-                                    <button onClick={() => handleDelete(usuario.id)}>Excluir</button>
+                                    <div style={{ display: 'flex', margin: '4px 0', gap: '8px' }}>
+                                        <button onClick={() => handleEdit(usuario)}>Editar</button>
+                                        <button onClick={() => handleDelete(usuario.id)}>Excluir</button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
