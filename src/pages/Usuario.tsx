@@ -71,6 +71,8 @@ function Usuarios() {
             }).catch(error => {
                 if (error.response?.status === 400 && typeof error.response.data === 'object') {
                     setErrors(error.response.data)
+                } else if (error.response.data.message.includes('CPF')) {
+                    setErrors({ cpf: 'CPF já cadastrado!' })
                 } else {
                     setErrors({ geral: 'Erro ao cadastrar usuário' })
                 }
@@ -123,36 +125,39 @@ function Usuarios() {
                 <form onSubmit={handleSubmit}>
                     {errors.geral && <p style={{ color: 'red' }}>{errors.geral}</p>}
                     {success && <p style={{ color: 'green' }}>{success}</p>}
-                    <h3>Nome</h3>
+                    <h3>Nome<span className="obrigatorio">*</span></h3>
                     <input
                         name="nome"
                         placeholder="Insira seu nome aqui"
                         value={form.nome}
                         maxLength={25}
-                        onChange={handleChange} />
+                        onChange={handleChange}
+                        required />
                     {errors.nome && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.nome}</span>}
                     <br />
-                    <h3>CPF</h3>
+                    <h3>CPF<span className="obrigatorio">*</span></h3>
                     <IMaskInput
                         name="cpf"
                         placeholder="Insira seu CPF aqui"
                         value={form.cpf}
                         onChange={handleChange}
                         mask="000.000.000-00"
+                        required
                     />
                     {errors.cpf && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.cpf}</span>}
                     <br />
-                    <h3>Telefone</h3>
+                    <h3>Telefone<span className="obrigatorio">*</span></h3>
                     <IMaskInput
                         name="telefone"
                         placeholder="(xx) xxxx-xxxx"
                         value={form.telefone}
                         onChange={handleChange}
                         mask="(00) 00000-0000"
+                        required
                     />
                     {errors.telefone && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.telefone}</span>}
                     <br />
-                    <h3>Data de nascimento</h3>
+                    <h3>Data de nascimento<span className="obrigatorio">*</span></h3>
                     <input
                         name="dataNascimento"
                         placeholder="Insira sua data de nascimento aqui"
@@ -161,7 +166,8 @@ function Usuarios() {
                         max={new Date().toISOString().split('T')[0]}
                         min="1900-01-01"
                         value={form.dataNascimento}
-                        onChange={handleChange} />
+                        onChange={handleChange}
+                        required />
                     {errors.dataNascimento && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.dataNascimento}</span>}
                     <br />
                     <div style={{ display: 'grid', gridTemplateColumns: editandoId ? '1fr 1fr' : '1fr', gap: '8px', marginTop: '8px' }}>

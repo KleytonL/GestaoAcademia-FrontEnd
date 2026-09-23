@@ -138,16 +138,17 @@ function Planos() {
                 <form onSubmit={handleSubmit}>
                     {errors.geral && <p style={{ color: 'red' }}>{errors.geral}</p>}
                     {success && <p style={{ color: 'green' }}>{success}</p>}
-                    <h3>Nome</h3>
+                    <h3>Nome<span className="obrigatorio">*</span></h3>
                     <input
                         name="nome"
                         placeholder="Insira o nome do plano"
                         value={form.nome}
                         maxLength={50}
-                        onChange={handleChange} />
+                        onChange={handleChange}
+                        required />
                     {errors.nome && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.nome}</span>}
                     <br />
-                    <h3>Valor</h3>
+                    <h3>Valor<span className="obrigatorio">*</span></h3>
                     <IMaskInput
                         name="valor"
                         placeholder="R$ 0,00"
@@ -167,13 +168,14 @@ function Planos() {
                     />
                     {errors.valor && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.valor}</span>}
                     <br />
-                    <h3>Duração (dias)</h3>
+                    <h3>Duração (dias)<span className="obrigatorio">*</span></h3>
                     <input
                         name="duracao"
                         placeholder="Insira a duração em dias"
                         type="number"
                         value={form.duracao}
-                        onChange={handleChange} />
+                        onChange={handleChange}
+                        required />
                     {errors.duracao && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.duracao}</span>}
                     <br />
                     <h3>Descrição</h3>
@@ -182,7 +184,8 @@ function Planos() {
                         placeholder="Insira a descrição do plano"
                         value={form.descricao}
                         maxLength={255}
-                        onChange={handleChange} />
+                        onChange={handleChange}
+                        />
                     <br />
                     <div style={{ display: 'grid', gridTemplateColumns: editandoId ? '1fr 1fr' : '1fr', gap: '8px', marginTop: '8px' }}>
                         <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
