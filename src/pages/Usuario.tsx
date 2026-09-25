@@ -57,6 +57,8 @@ function Usuarios() {
             }).catch(error => {
                 if (error.response?.status === 400 && typeof error.response.data === 'object') {
                     setErrors(error.response.data)
+                } else if (error.response.data.message.includes('CPF')) {
+                    setErrors({ cpf: error.response.data.message })
                 } else {
                     setErrors({ geral: 'Erro ao atualizar usuário' })
                 }
@@ -72,7 +74,7 @@ function Usuarios() {
                 if (error.response?.status === 400 && typeof error.response.data === 'object') {
                     setErrors(error.response.data)
                 } else if (error.response.data.message.includes('CPF')) {
-                    setErrors({ cpf: 'CPF já cadastrado!' })
+                    setErrors({ cpf: error.response.data.message })
                 } else {
                     setErrors({ geral: 'Erro ao cadastrar usuário' })
                 }
