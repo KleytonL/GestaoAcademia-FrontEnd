@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react"
 import { IMaskInput } from "react-imask"
+import { toast } from "react-hot-toast"
+import { isAxiosError } from "axios"
 import api from "../service/api"
+import ConfirmModal from "../components/ConfirmModal"
 
 interface Plano {
     id: number
@@ -22,9 +25,9 @@ function Planos() {
     const [planos, setPlanos] = useState<Plano[]>([])
     const [form, setForm] = useState<PlanoForm>({ nome: '', valor: '', duracao: '', descricao: '' })
     const [editandoId, setEditandoId] = useState<number | null>(null)
+    const [excluindoId, setExcluindoId] = useState<number | null>(null)
     const [filtroAtivo, setFiltroAtivo] = useState<string>('true')
     const [errors, setErrors] = useState<Record<string, string>>({})
-    const [success, setSuccess] = useState<string>('')
 
     const valorNumerico = parseFloat(form.valor.replace('R$ ', '').replace('.', '').replace(',', '.'))
 
@@ -41,11 +44,24 @@ function Planos() {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
+    function tratarErro(error: unknown, mensagemGeral: string) {
+        if (isAxiosError<Record<string, string>>(error)) {
+            const data = error.response?.data
+
+            if (error.response?.status === 400 && typeof data === 'object') {
+                setErrors(data)
+            } else {
+                toast.error(mensagemGeral)
+            }
+        } else {
+            toast.error(mensagemGeral)
+        }
+        console.error(error)
+    }
+
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault()
-
         setErrors({})
-        setSuccess('')
 
         if (!validadeForm()) return
 
@@ -58,32 +74,17 @@ function Planos() {
 
         if (editandoId) {
             api.put(`/planos/${editandoId}`, payload).then(() => {
-                setSuccess('Plano atualizado com sucesso!')
+                toast.success('Plano atualizado com sucesso!')
                 setEditandoId(null)
                 setForm({ nome: '', valor: '', duracao: '', descricao: '' })
                 buscarPlanos(filtroAtivo)
-            }).catch(error => {
-                if (error.response?.status === 400 && typeof error.response.data === 'object') {
-                    setErrors(error.response.data)
-                } else {
-                    setErrors({ geral: 'Erro ao atualizar plano' })
-                }
-                console.error(error)
-            })
-
+            }).catch(error => tratarErro(error, 'Erro ao atualizar plano'))
         } else {
             api.post('/planos', payload).then(() => {
+                toast.success('Plano cadastrado com sucesso!')
                 setForm({ nome: '', valor: '', duracao: '', descricao: '' })
-                setSuccess('Plano cadastrado com sucesso!')
                 buscarPlanos(filtroAtivo)
-            }).catch(error => {
-                if (error.response?.status === 400 && typeof error.response.data === 'object') {
-                    setErrors(error.response.data)
-                } else {
-                    setErrors({ geral: 'Erro ao cadastrar plano' })
-                }
-                console.error(error)
-            })
+            }).catch(error => tratarErro(error, 'Erro ao cadastrar plano'))
         }
     }
 
@@ -95,34 +96,28 @@ function Planos() {
             duracao: String(plano.duracao),
             descricao: plano.descricao
         })
-        setSuccess('')
         setErrors({})
     }
 
     function handleDelete(id: number) {
-        if (!window.confirm('Tem certeza que deseja excluir este plano?')) return
-
-        setErrors({})
-
         api.delete(`/planos/${id}`).then(() => {
-            setSuccess('Plano excluído com sucesso!')
+            toast.success('Plano excluído com sucesso!')
             buscarPlanos(filtroAtivo)
         }).catch(error => {
-            setErrors({ geral: 'Erro ao excluir plano' })
+            toast.error('Erro ao excluir plano')
             console.error(error)
-        })
+        }).finally(() => setExcluindoId(null))
     }
 
     function handleCancelEdit() {
         setEditandoId(null)
         setForm({ nome: '', valor: '', duracao: '', descricao: '' })
-        setSuccess('')
         setErrors({})
     }
 
     function validadeForm() {
         if (!form.nome || !form.valor || !form.duracao) {
-            setErrors({ geral: 'Erro ao cadastrar plano' })
+            toast.error('Preencha todos os campos obrigatórios')
             return false
         }
 
@@ -136,8 +131,6 @@ function Planos() {
 
                 <h2>{editandoId ? 'Editar plano' : 'Cadastrar plano'}</h2>
                 <form onSubmit={handleSubmit}>
-                    {errors.geral && <p style={{ color: 'red' }}>{errors.geral}</p>}
-                    {success && <p style={{ color: 'green' }}>{success}</p>}
                     <h3>Nome<span className="obrigatorio">*</span></h3>
                     <input
                         name="nome"
@@ -227,9 +220,13 @@ function Planos() {
                                 <td className="descricao-wrap" title={plano.descricao}>{plano.descricao}</td>
                                 <td>{plano.ativo ? 'Ativo' : 'Inativo'}</td>
                                 <td>
-                                    <div style={{ display: 'flex', margin: '4px 0', gap: '8px' }}>
-                                        <button onClick={() => handleEdit(plano)}>Editar</button>
-                                        <button onClick={() => handleDelete(plano.id)}>Excluir</button>
+                                    <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0', gap: '8px', minHeight: '36px' }}>
+                                        {plano.ativo && (
+                                            <>
+                                                <button onClick={() => handleEdit(plano)}>Editar</button>
+                                                <button onClick={() => setExcluindoId(plano.id)}>Excluir</button>
+                                            </>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -237,6 +234,13 @@ function Planos() {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmModal
+                isOpen={excluindoId !== null}
+                onClose={() => setExcluindoId(null)}
+                onConfirm={() => handleDelete(excluindoId!)}
+                message="Tem certeza que deseja excluir este plano?"
+            />
         </div>
     )
 }

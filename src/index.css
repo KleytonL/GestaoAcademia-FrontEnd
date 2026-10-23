@@ -65,12 +65,14 @@
   text-overflow: ellipsis;
 }
 
-.planos-destaque, .stats {
+.planos-destaque,
+.stats {
   padding: 48px 24px;
   text-align: center;
 }
 
-.planos-destaque h2, .stats h2 {
+.planos-destaque h2,
+.stats h2 {
   color: #E56C23;
   margin-bottom: 24px;
   font-size: 2rem;
@@ -147,9 +149,54 @@
   color: #E56C23;
 }
 
+.linha-item {
+  min-height: 56px;
+}
+
 .obrigatorio {
   color: red;
   margin-left: 4px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #1E1E1E;
+  color: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  min-width: 320px;
+  border: 1px solid #333;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.btn-cancel {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #555;
+}
+
+.btn-confirm {
+  background: #E84C0E;
+  color: #fff;
+}
+
+.toast-container {
+  bottom: 80px !important;
 }
 
 body {

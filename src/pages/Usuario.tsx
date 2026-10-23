@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react"
 import { IMaskInput } from "react-imask"
+import { toast } from "react-hot-toast"
+import { isAxiosError } from "axios"
 import api from "../service/api"
+import ConfirmModal from "../components/ConfirmModal"
 
 interface Usuario {
     id: number
@@ -22,9 +25,9 @@ function Usuarios() {
     const [usuarios, setUsuarios] = useState<Usuario[]>([])
     const [form, setForm] = useState<UsuarioForm>({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
     const [editandoId, setEditandoId] = useState<number | null>(null)
+    const [excluindoId, setExcluindoId] = useState<number | null>(null)
     const [filtroAtivo, setFiltroAtivo] = useState<string>('true')
     const [errors, setErrors] = useState<Record<string, string>>({})
-    const [success, setSuccess] = useState<string>('')
 
     function buscarUsuarios(filtro: string) {
         const params = filtro === 'todos' ? {} : { ativo: filtro }
@@ -39,80 +42,70 @@ function Usuarios() {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
+    function tratarErro(error: unknown, mensagemGeral: string) {
+        if (isAxiosError<Record<string, string>>(error)) {
+            const data = error.response?.data
+
+            if (error.response?.status === 400 && typeof data === 'object') {
+                setErrors(data)
+            } else if (data?.message?.includes('CPF')) {
+                setErrors({ cpf: data.message })
+            } else {
+                toast.error(mensagemGeral)
+            }
+        } else {
+            toast.error(mensagemGeral)
+        }
+        console.error(error)
+    }
+
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault()
-
         setErrors({})
-        setSuccess('')
 
         if (!validadeForm()) return
 
         if (editandoId) {
-
             api.put(`/usuarios/${editandoId}`, form).then(() => {
-                setSuccess('Usuário atualizado com sucesso!')
+                toast.success('Usuário atualizado com sucesso!')
                 setEditandoId(null)
                 setForm({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
                 buscarUsuarios(filtroAtivo)
-            }).catch(error => {
-                if (error.response?.status === 400 && typeof error.response.data === 'object') {
-                    setErrors(error.response.data)
-                } else if (error.response.data.message.includes('CPF')) {
-                    setErrors({ cpf: error.response.data.message })
-                } else {
-                    setErrors({ geral: 'Erro ao atualizar usuário' })
-                }
-                console.error(error)
-            })
-
+            }).catch(error => tratarErro(error, 'Erro ao atualizar usuário'))
         } else {
             api.post('/usuarios', form).then(() => {
+                toast.success('Usuário cadastrado com sucesso!')
                 setForm({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
-                setSuccess('Usuário cadastrado com sucesso!')
                 buscarUsuarios(filtroAtivo)
-            }).catch(error => {
-                if (error.response?.status === 400 && typeof error.response.data === 'object') {
-                    setErrors(error.response.data)
-                } else if (error.response.data.message.includes('CPF')) {
-                    setErrors({ cpf: error.response.data.message })
-                } else {
-                    setErrors({ geral: 'Erro ao cadastrar usuário' })
-                }
-                console.error(error)
-            })
+            }).catch(error => tratarErro(error, 'Erro ao cadastrar usuário'))
         }
     }
 
     function handleEdit(usuario: Usuario) {
         setEditandoId(usuario.id)
         setForm({ nome: usuario.nome, telefone: usuario.telefone, cpf: usuario.cpf, dataNascimento: usuario.dataNascimento.split('/').reverse().join('-') })
-        setSuccess('')
         setErrors({})
     }
 
-
     function handleDelete(id: number) {
-        if (!window.confirm('Tem certeza que deseja excluir este usuário?')) return
-
         api.delete(`/usuarios/${id}`).then(() => {
-            setSuccess('Usuário excluído com sucesso!')
+            toast.success('Usuário excluído com sucesso!')
             buscarUsuarios(filtroAtivo)
         }).catch(error => {
-            setErrors({ geral: 'Erro ao excluir usuário' })
+            toast.error('Erro ao excluir usuário')
             console.error(error)
-        })
+        }).finally(() => setExcluindoId(null))
     }
 
     function handleCancelEdit() {
         setEditandoId(null)
         setForm({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
-        setSuccess('')
         setErrors({})
     }
 
     function validadeForm() {
         if (!form.nome || !form.telefone || !form.cpf || !form.dataNascimento) {
-            setErrors({ geral: 'Todos os campos são obrigatórios' })
+            toast.error('Todos os campos são obrigatórios')
             return false
         }
         return true
@@ -125,8 +118,6 @@ function Usuarios() {
 
                 <h2>{editandoId ? 'Editar usuário' : 'Cadastrar usuário'}</h2>
                 <form onSubmit={handleSubmit}>
-                    {errors.geral && <p style={{ color: 'red' }}>{errors.geral}</p>}
-                    {success && <p style={{ color: 'green' }}>{success}</p>}
                     <h3>Nome<span className="obrigatorio">*</span></h3>
                     <input
                         name="nome"
@@ -205,16 +196,20 @@ function Usuarios() {
                     </thead>
                     <tbody>
                         {usuarios.map((usuario) => (
-                            <tr key={usuario.id}>
+                            <tr key={usuario.id} className="linha-item">
                                 <td>{usuario.nome}</td>
                                 <td>{usuario.cpf}</td>
                                 <td>{usuario.telefone}</td>
                                 <td>{usuario.dataNascimento}</td>
                                 <td>{usuario.ativo ? 'Ativo' : 'Inativo'}</td>
                                 <td>
-                                    <div style={{ display: 'flex', margin: '4px 0', gap: '8px' }}>
-                                        <button onClick={() => handleEdit(usuario)}>Editar</button>
-                                        <button onClick={() => handleDelete(usuario.id)}>Excluir</button>
+                                    <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0', gap: '8px', minHeight: '36px' }}>
+                                        {usuario.ativo && (
+                                            <>
+                                                <button onClick={() => setExcluindoId(usuario.id)}>Excluir</button>
+                                                <button onClick={() => handleEdit(usuario)}>Editar</button>
+                                            </>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -222,6 +217,13 @@ function Usuarios() {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmModal
+                isOpen={excluindoId !== null}
+                onClose={() => setExcluindoId(null)}
+                onConfirm={() => handleDelete(excluindoId!)}
+                message="Tem certeza que deseja excluir este usuário?"
+            />
         </div>
     )
 }
