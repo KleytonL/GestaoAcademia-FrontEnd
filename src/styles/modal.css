@@ -1,0 +1,57 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.modal-box {
+    background: #1E1E1E;
+    color: #fff;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 12px;
+    border-top: 4px solid #E84C0E;
+}
+
+.modal-largo {
+    max-width: 800px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-fechar {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 0 24px 24px;
+}
+
+/* O form global tem max-width 400px e fundo próprio; dentro do modal ocupa tudo */
+.modal-body form {
+    max-width: none;
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+}

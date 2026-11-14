@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Planos from './pages/Plano'
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
+import Layout from "./components/Layout"
 import Usuario from "./pages/Usuario"
 import Fichas from "./pages/Ficha"
 
@@ -15,10 +16,13 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/usuarios" element={<Usuario />} />
-          <Route path="/planos" element={<Planos />} />
-          <Route path="/fichas" element={<Fichas />} />
-          <Route path="*" element={<h1>Página não encontrada</h1>} />
+
+          <Route element={<Layout />}>
+            <Route path="/usuarios" element={<Usuario />} />
+            <Route path="/planos" element={<Planos />} />
+            <Route path="/fichas" element={<Fichas />} />
+            <Route path="*" element={<h1>Página não encontrada</h1>} />
+          </Route>
         </Routes>
       </main>
       <Footer />

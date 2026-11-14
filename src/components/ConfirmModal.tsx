@@ -1,3 +1,5 @@
+import "../styles/confirmModal.css"
+
 interface Props {
     isOpen: boolean
     onClose: () => void

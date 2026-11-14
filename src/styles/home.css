@@ -1,0 +1,110 @@
+/* ===== Hero ===== */
+.hero {
+  height: 400px;
+  width: 100%;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay {
+  text-align: left;
+  color: #fff;
+  margin-right: auto;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.overlay h1 {
+  font-size: 72px;
+  margin-bottom: 10px;
+}
+
+/* ===== Planos em destaque ===== */
+.planos-destaque,
+.stats {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.planos-destaque h2,
+.stats h2 {
+  color: #E56C23;
+  margin-bottom: 24px;
+  font-size: 2rem;
+}
+
+.cards-planos {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.card-plano {
+  background: #2A2A2A;
+  border: 1px solid #E56C23;
+  border-radius: 8px;
+  padding: 24px;
+  width: 280px;
+  height: 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-plano p {
+  overflow-wrap: break-word;
+  margin: 8px 0;
+}
+
+.card-plano h3 {
+  font-size: 1.3rem;
+}
+
+.card-valor {
+  margin: 20px 0;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #E56C23;
+}
+
+.card-duracao {
+  font-size: 1rem;
+}
+
+.card-descricao {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ===== Stats ===== */
+.stats {
+  height: 400px;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 24px;
+}
+
+.stats-overlay {
+  text-align: right;
+  color: #fff;
+}
+
+.stats-overlay h2 {
+  font-size: 3.5rem;
+  color: #E56C23;
+}

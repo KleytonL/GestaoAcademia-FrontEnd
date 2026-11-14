@@ -4,6 +4,9 @@ import { toast } from "react-hot-toast"
 import { isAxiosError } from "axios"
 import api from "../service/api"
 import ConfirmModal from "../components/ConfirmModal"
+import Modal from "../components/Modal"
+import Paginacao from "../components/Paginacao"
+import "../styles/pages.css"
 
 interface Usuario {
     id: number
@@ -21,13 +24,22 @@ interface UsuarioForm {
     dataNascimento: string
 }
 
+const FORM_VAZIO: UsuarioForm = { nome: '', telefone: '', cpf: '', dataNascimento: '' }
+const POR_PAGINA = 10
+
 function Usuarios() {
     const [usuarios, setUsuarios] = useState<Usuario[]>([])
-    const [form, setForm] = useState<UsuarioForm>({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
+    const [form, setForm] = useState<UsuarioForm>(FORM_VAZIO)
     const [editandoId, setEditandoId] = useState<number | null>(null)
     const [excluindoId, setExcluindoId] = useState<number | null>(null)
     const [filtroAtivo, setFiltroAtivo] = useState<string>('true')
     const [errors, setErrors] = useState<Record<string, string>>({})
+    const [modalAberto, setModalAberto] = useState(false)
+    const [pagina, setPagina] = useState(1)
+
+    const totalPaginas = Math.max(1, Math.ceil(usuarios.length / POR_PAGINA))
+    const paginaAtual = Math.min(pagina, totalPaginas)
+    const usuariosPagina = usuarios.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA)
 
     function buscarUsuarios(filtro: string) {
         const params = filtro === 'todos' ? {} : { ativo: filtro }
@@ -40,6 +52,22 @@ function Usuarios() {
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
         setForm({ ...form, [e.target.name]: e.target.value })
+    }
+
+    function limparForm() {
+        setEditandoId(null)
+        setForm(FORM_VAZIO)
+        setErrors({})
+    }
+
+    function abrirCadastro() {
+        limparForm()
+        setModalAberto(true)
+    }
+
+    function fecharModal() {
+        limparForm()
+        setModalAberto(false)
     }
 
     function tratarErro(error: unknown, mensagemGeral: string) {
@@ -68,14 +96,13 @@ function Usuarios() {
         if (editandoId) {
             api.put(`/usuarios/${editandoId}`, form).then(() => {
                 toast.success('Usuário atualizado com sucesso!')
-                setEditandoId(null)
-                setForm({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
+                fecharModal()
                 buscarUsuarios(filtroAtivo)
             }).catch(error => tratarErro(error, 'Erro ao atualizar usuário'))
         } else {
             api.post('/usuarios', form).then(() => {
                 toast.success('Usuário cadastrado com sucesso!')
-                setForm({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
+                fecharModal()
                 buscarUsuarios(filtroAtivo)
             }).catch(error => tratarErro(error, 'Erro ao cadastrar usuário'))
         }
@@ -85,6 +112,7 @@ function Usuarios() {
         setEditandoId(usuario.id)
         setForm({ nome: usuario.nome, telefone: usuario.telefone, cpf: usuario.cpf, dataNascimento: usuario.dataNascimento.split('/').reverse().join('-') })
         setErrors({})
+        setModalAberto(true)
     }
 
     function handleDelete(id: number) {
@@ -95,12 +123,6 @@ function Usuarios() {
             toast.error('Erro ao excluir usuário')
             console.error(error)
         }).finally(() => setExcluindoId(null))
-    }
-
-    function handleCancelEdit() {
-        setEditandoId(null)
-        setForm({ nome: '', telefone: '', cpf: '', dataNascimento: '' })
-        setErrors({})
     }
 
     function validadeForm() {
@@ -115,8 +137,13 @@ function Usuarios() {
         <div className="page">
             <div>
                 <h1>Usuários</h1>
+                <button onClick={abrirCadastro}>Novo usuário</button>
+            </div>
 
-                <h2>{editandoId ? 'Editar usuário' : 'Cadastrar usuário'}</h2>
+            <Modal
+                aberto={modalAberto}
+                titulo={editandoId ? 'Editar usuário' : 'Cadastrar usuário'}
+                onFechar={fecharModal}>
                 <form onSubmit={handleSubmit}>
                     <h3>Nome<span className="obrigatorio">*</span></h3>
                     <input
@@ -163,21 +190,20 @@ function Usuarios() {
                         required />
                     {errors.dataNascimento && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.dataNascimento}</span>}
                     <br />
-                    <div style={{ display: 'grid', gridTemplateColumns: editandoId ? '1fr 1fr' : '1fr', gap: '8px', marginTop: '8px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
                         <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
-                        {editandoId && (
-                            <button type="button" onClick={handleCancelEdit}>
-                                Cancelar
-                            </button>
-                        )}
+                        <button type="button" onClick={fecharModal}>Cancelar</button>
                     </div>
                 </form>
-            </div>
+            </Modal>
+
             <div>
                 <h2>Lista de usuários</h2>
                 <label>
                     Filtrar:
-                    <select value={filtroAtivo} onChange={(e) => setFiltroAtivo(e.target.value)}>
+                    <select
+                        value={filtroAtivo}
+                        onChange={(e) => { setFiltroAtivo(e.target.value); setPagina(1) }}>
                         <option value="true">Ativos</option>
                         <option value="false">Inativos</option>
                         <option value="todos">Todos</option>
@@ -195,7 +221,7 @@ function Usuarios() {
                         </tr>
                     </thead>
                     <tbody>
-                        {usuarios.map((usuario) => (
+                        {usuariosPagina.map((usuario) => (
                             <tr key={usuario.id} className="linha-item">
                                 <td>{usuario.nome}</td>
                                 <td>{usuario.cpf}</td>
@@ -216,6 +242,7 @@ function Usuarios() {
                         ))}
                     </tbody>
                 </table>
+                <Paginacao pagina={paginaAtual} totalPaginas={totalPaginas} onMudar={setPagina} />
             </div>
 
             <ConfirmModal

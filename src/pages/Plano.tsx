@@ -4,6 +4,9 @@ import { toast } from "react-hot-toast"
 import { isAxiosError } from "axios"
 import api from "../service/api"
 import ConfirmModal from "../components/ConfirmModal"
+import Modal from "../components/Modal"
+import Paginacao from "../components/Paginacao"
+import "../styles/pages.css"
 
 interface Plano {
     id: number
@@ -21,15 +24,24 @@ interface PlanoForm {
     descricao: string
 }
 
+const FORM_VAZIO: PlanoForm = { nome: '', valor: '', duracao: '', descricao: '' }
+const POR_PAGINA = 10
+
 function Planos() {
     const [planos, setPlanos] = useState<Plano[]>([])
-    const [form, setForm] = useState<PlanoForm>({ nome: '', valor: '', duracao: '', descricao: '' })
+    const [form, setForm] = useState<PlanoForm>(FORM_VAZIO)
     const [editandoId, setEditandoId] = useState<number | null>(null)
     const [excluindoId, setExcluindoId] = useState<number | null>(null)
     const [filtroAtivo, setFiltroAtivo] = useState<string>('true')
     const [errors, setErrors] = useState<Record<string, string>>({})
+    const [modalAberto, setModalAberto] = useState(false)
+    const [pagina, setPagina] = useState(1)
 
     const valorNumerico = parseFloat(form.valor.replace('R$ ', '').replace('.', '').replace(',', '.'))
+
+    const totalPaginas = Math.max(1, Math.ceil(planos.length / POR_PAGINA))
+    const paginaAtual = Math.min(pagina, totalPaginas)
+    const planosPagina = planos.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA)
 
     function buscarPlanos(filtro: string) {
         const params = filtro === 'todos' ? {} : { ativo: filtro }
@@ -42,6 +54,22 @@ function Planos() {
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         setForm({ ...form, [e.target.name]: e.target.value })
+    }
+
+    function limparForm() {
+        setEditandoId(null)
+        setForm(FORM_VAZIO)
+        setErrors({})
+    }
+
+    function abrirCadastro() {
+        limparForm()
+        setModalAberto(true)
+    }
+
+    function fecharModal() {
+        limparForm()
+        setModalAberto(false)
     }
 
     function tratarErro(error: unknown, mensagemGeral: string) {
@@ -75,14 +103,13 @@ function Planos() {
         if (editandoId) {
             api.put(`/planos/${editandoId}`, payload).then(() => {
                 toast.success('Plano atualizado com sucesso!')
-                setEditandoId(null)
-                setForm({ nome: '', valor: '', duracao: '', descricao: '' })
+                fecharModal()
                 buscarPlanos(filtroAtivo)
             }).catch(error => tratarErro(error, 'Erro ao atualizar plano'))
         } else {
             api.post('/planos', payload).then(() => {
                 toast.success('Plano cadastrado com sucesso!')
-                setForm({ nome: '', valor: '', duracao: '', descricao: '' })
+                fecharModal()
                 buscarPlanos(filtroAtivo)
             }).catch(error => tratarErro(error, 'Erro ao cadastrar plano'))
         }
@@ -97,6 +124,7 @@ function Planos() {
             descricao: plano.descricao
         })
         setErrors({})
+        setModalAberto(true)
     }
 
     function handleDelete(id: number) {
@@ -107,12 +135,6 @@ function Planos() {
             toast.error('Erro ao excluir plano')
             console.error(error)
         }).finally(() => setExcluindoId(null))
-    }
-
-    function handleCancelEdit() {
-        setEditandoId(null)
-        setForm({ nome: '', valor: '', duracao: '', descricao: '' })
-        setErrors({})
     }
 
     function validadeForm() {
@@ -128,8 +150,13 @@ function Planos() {
         <div className="page">
             <div>
                 <h1>Planos</h1>
+                <button onClick={abrirCadastro}>Novo plano</button>
+            </div>
 
-                <h2>{editandoId ? 'Editar plano' : 'Cadastrar plano'}</h2>
+            <Modal
+                aberto={modalAberto}
+                titulo={editandoId ? 'Editar plano' : 'Cadastrar plano'}
+                onFechar={fecharModal}>
                 <form onSubmit={handleSubmit}>
                     <h3>Nome<span className="obrigatorio">*</span></h3>
                     <input
@@ -180,21 +207,20 @@ function Planos() {
                         onChange={handleChange}
                         />
                     <br />
-                    <div style={{ display: 'grid', gridTemplateColumns: editandoId ? '1fr 1fr' : '1fr', gap: '8px', marginTop: '8px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
                         <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
-                        {editandoId && (
-                            <button type="button" onClick={handleCancelEdit}>
-                                Cancelar
-                            </button>
-                        )}
+                        <button type="button" onClick={fecharModal}>Cancelar</button>
                     </div>
                 </form>
-            </div>
+            </Modal>
+
             <div>
                 <h2>Lista de planos</h2>
                 <label>
                     Filtrar:
-                    <select value={filtroAtivo} onChange={(e) => setFiltroAtivo(e.target.value)}>
+                    <select
+                        value={filtroAtivo}
+                        onChange={(e) => { setFiltroAtivo(e.target.value); setPagina(1) }}>
                         <option value="true">Ativos</option>
                         <option value="false">Inativos</option>
                         <option value="todos">Todos</option>
@@ -212,7 +238,7 @@ function Planos() {
                         </tr>
                     </thead>
                     <tbody>
-                        {planos.map((plano) => (
+                        {planosPagina.map((plano) => (
                             <tr key={plano.id}>
                                 <td>{plano.nome}</td>
                                 <td>R$ {plano.valor.toFixed(2)}</td>
@@ -233,6 +259,7 @@ function Planos() {
                         ))}
                     </tbody>
                 </table>
+                <Paginacao pagina={paginaAtual} totalPaginas={totalPaginas} onMudar={setPagina} />
             </div>
 
             <ConfirmModal

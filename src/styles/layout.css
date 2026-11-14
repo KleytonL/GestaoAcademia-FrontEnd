@@ -1,0 +1,60 @@
+/* O <main> do App passa a ser flex só quando contém o layout (Home não é afetada) */
+main:has(> .layout) {
+    display: flex;
+}
+
+/* row-reverse = sidebar à direita.
+   Para deixar à esquerda (como no print): troque por "row"
+   e, em .sidebar, troque border-left por border-right. */
+.layout {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: stretch;
+}
+
+.layout-conteudo {
+    flex: 1;
+    min-width: 0;
+}
+
+.sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    background: #2B2B2B;
+    border-right: 3px solid #E84C0E;
+    padding: 16px 0;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-link {
+    padding: 12px 24px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+
+.sidebar-link:hover {
+    background: #1E1E1E;
+}
+
+.sidebar-link.ativo {
+    background: #1E1E1E;
+    color: #E84C0E;
+}
+
+@media (max-width: 700px) {
+    .sidebar {
+        width: 150px;
+    }
+
+    .sidebar-link {
+        padding: 10px 16px;
+        font-size: 1rem;
+    }
+}

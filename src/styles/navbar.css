@@ -1,0 +1,29 @@
+.navbar {
+  min-height: 80px;
+  background-color: #eee;
+  border-bottom: 5px solid #E56C23;
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.navbar a {
+  padding: 10px 15px;
+  text-decoration: none;
+  font-size: 16px;
+  color: #222;
+}
+
+.navbar a:hover {
+  color: #eee;
+  background-color: #222;
+  border-radius: 5px;
+}
+
+.navbar h1 {
+  margin: 0;
+  margin-right: auto;
+  font-size: 20px;
+  color: #222;
+}

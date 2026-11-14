@@ -1,0 +1,23 @@
+.paginacao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.paginacao button {
+    min-width: 36px;
+}
+
+.paginacao button.pagina-ativa {
+    background: #E84C0E;
+    color: #fff;
+    border-color: #E84C0E;
+}
+
+.paginacao button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

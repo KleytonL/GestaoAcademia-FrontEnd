@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import academiaImg from '../assets/academia.jpg'
 import api from "../service/api"
+import "../styles/home.css"
 
 interface Plano {
     id: number

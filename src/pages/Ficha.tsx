@@ -3,6 +3,9 @@ import { toast } from "react-hot-toast"
 import { isAxiosError } from "axios"
 import api from "../service/api"
 import ConfirmModal from "../components/ConfirmModal"
+import Modal from "../components/Modal"
+import Paginacao from "../components/Paginacao"
+import "../styles/pages.css"
 
 interface Exercicio {
     id: number
@@ -52,6 +55,7 @@ interface ItemForm {
 
 const FORM_VAZIO: FichaForm = { nome: '', descricao: '', usuarioId: '' }
 const ITEM_VAZIO: ItemForm = { exercicioId: '', series: '', repeticoes: '', carga: '', descanso: '' }
+const POR_PAGINA = 10
 
 function Fichas() {
     const [fichas, setFichas] = useState<Ficha[]>([])
@@ -62,8 +66,14 @@ function Fichas() {
     const [editandoId, setEditandoId] = useState<number | null>(null)
     const [excluindoId, setExcluindoId] = useState<number | null>(null)
     const [errors, setErrors] = useState<Record<string, string>>({})
+    const [modalAberto, setModalAberto] = useState(false)
+    const [pagina, setPagina] = useState(1)
 
     const erroItens = errors.series ?? errors.repeticoes ?? errors.carga ?? errors.descanso
+
+    const totalPaginas = Math.max(1, Math.ceil(fichas.length / POR_PAGINA))
+    const paginaAtual = Math.min(pagina, totalPaginas)
+    const fichasPagina = fichas.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA)
 
     function buscarFichas() {
         api.get('/fichas').then(response => setFichas(response.data)).catch(error => console.error('Erro ao buscar fichas: ', error))
@@ -91,11 +101,21 @@ function Fichas() {
         setItens(itens.filter((_, i) => i !== index))
     }
 
-    function resetarForm() {
+    function limparForm() {
         setEditandoId(null)
         setForm(FORM_VAZIO)
         setItens([{ ...ITEM_VAZIO }])
         setErrors({})
+    }
+
+    function abrirCadastro() {
+        limparForm()
+        setModalAberto(true)
+    }
+
+    function fecharModal() {
+        limparForm()
+        setModalAberto(false)
     }
 
     function tratarErro(error: unknown, mensagemGeral: string) {
@@ -150,13 +170,13 @@ function Fichas() {
         if (editandoId) {
             api.put(`/fichas/${editandoId}`, payload).then(() => {
                 toast.success('Ficha atualizada com sucesso!')
-                resetarForm()
+                fecharModal()
                 buscarFichas()
             }).catch(error => tratarErro(error, 'Erro ao atualizar ficha'))
         } else {
             api.post('/fichas', payload).then(() => {
                 toast.success('Ficha cadastrada com sucesso!')
-                resetarForm()
+                fecharModal()
                 buscarFichas()
             }).catch(error => tratarErro(error, 'Erro ao cadastrar ficha'))
         }
@@ -173,6 +193,7 @@ function Fichas() {
             descanso: String(e.descanso)
         })))
         setErrors({})
+        setModalAberto(true)
     }
 
     function handleDelete(id: number) {
@@ -189,8 +210,14 @@ function Fichas() {
         <div className="page">
             <div>
                 <h1>Fichas</h1>
+                <button onClick={abrirCadastro}>Nova ficha</button>
+            </div>
 
-                <h2>{editandoId ? 'Editar ficha' : 'Cadastrar ficha'}</h2>
+            <Modal
+                aberto={modalAberto}
+                titulo={editandoId ? 'Editar ficha' : 'Cadastrar ficha'}
+                onFechar={fecharModal}
+                largo>
                 <form onSubmit={handleSubmit}>
                     <h3>Nome da ficha<span className="obrigatorio">*</span></h3>
                     <input
@@ -274,12 +301,11 @@ function Fichas() {
                     <br />
                     <div className="acoes-form">
                         <button type="submit">{editandoId ? 'Atualizar' : 'Cadastrar'}</button>
-                        {editandoId && (
-                            <button type="button" onClick={resetarForm}>Cancelar</button>
-                        )}
+                        <button type="button" onClick={fecharModal}>Cancelar</button>
                     </div>
                 </form>
-            </div>
+            </Modal>
+
             <div>
                 <h2>Lista de fichas</h2>
                 <table>
@@ -293,7 +319,7 @@ function Fichas() {
                         </tr>
                     </thead>
                     <tbody>
-                        {fichas.map((ficha) => (
+                        {fichasPagina.map((ficha) => (
                             <tr key={ficha.id}>
                                 <td>{ficha.nome}</td>
                                 <td>{ficha.usuarioNome}</td>
@@ -315,6 +341,7 @@ function Fichas() {
                         ))}
                     </tbody>
                 </table>
+                <Paginacao pagina={paginaAtual} totalPaginas={totalPaginas} onMudar={setPagina} />
             </div>
 
             <ConfirmModal
