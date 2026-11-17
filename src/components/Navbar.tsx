@@ -7,15 +7,14 @@ function Navbar() {
 
     return (
         <nav className="navbar">
-            <h1>CR Trainer</h1>
+            <h1>
+                <Link to="/">CR Trainer</Link>
+            </h1>
 
-            {naHome && (
-                <>
-                    <Link to="/usuarios">Usuários</Link>
-                    <Link to="/planos">Planos</Link>
-                    <Link to="/fichas">Fichas</Link>
-                </>
-            )}
+            {naHome && <Link to="/dashboard">Dashboard</Link>}
+
+            <Link to="/login">Entrar</Link>
+            <Link to="/cadastro">Cadastrar</Link>
         </nav>
     )
 }

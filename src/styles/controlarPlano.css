@@ -1,0 +1,29 @@
+.plano-atual,
+.plano-item {
+  background: #2A2A2A;
+  border: 1px solid #E56C23;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.plano-atual p {
+  margin-bottom: 8px;
+}
+
+.plano-atual button {
+  margin-top: 8px;
+}
+
+.planos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.plano-item {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}

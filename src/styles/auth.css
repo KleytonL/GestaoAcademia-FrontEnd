@@ -1,0 +1,25 @@
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.auth-page form {
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 0;
+}
+
+.auth-page button[type="submit"] {
+  margin-top: 8px;
+}
+
+.auth-link {
+  margin-top: 16px;
+  text-align: center;
+  color: #ccc;
+}
+
+.auth-link a {
+  color: #E84C0E;
+}

@@ -2,10 +2,12 @@ import { NavLink } from "react-router-dom"
 import "../styles/layout.css"
 
 const LINKS = [
-    { to: "/", label: "Início" },
+    { to: "/dashboard", label: "Dashboard" },
     { to: "/usuarios", label: "Usuários" },
     { to: "/planos", label: "Planos" },
     { to: "/fichas", label: "Fichas" },
+    { to: "/meu-plano", label: "Meu plano" },
+    { to: "/", label: "Voltar" },
 ]
 
 function Sidebar() {

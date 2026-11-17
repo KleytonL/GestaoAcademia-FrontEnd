@@ -7,6 +7,10 @@ import Footer from "./components/Footer"
 import Layout from "./components/Layout"
 import Usuario from "./pages/Usuario"
 import Fichas from "./pages/Ficha"
+import Login from "./pages/Login"
+import Cadastro from "./pages/Cadastro"
+import ControlarPlano from "./pages/ControlarPlano"
+import Dashboard from "./pages/Dashboard"
 
 function App() {
   return (
@@ -16,11 +20,15 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
 
           <Route element={<Layout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/usuarios" element={<Usuario />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/fichas" element={<Fichas />} />
+            <Route path="/meu-plano" element={<ControlarPlano />} />
             <Route path="*" element={<h1>Página não encontrada</h1>} />
           </Route>
         </Routes>

@@ -1,0 +1,23 @@
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.dashboard-card {
+  background: #2A2A2A;
+  border: 1px solid #E56C23;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.dashboard-card p {
+  color: #ccc;
+  margin-bottom: 8px;
+}
+
+.dashboard-card strong {
+  display: block;
+  font-size: 2.5rem;
+  color: #E56C23;
+}
